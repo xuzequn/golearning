@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -94,7 +95,11 @@ func SetFuncField(val interface{}) {
 				name := args[0].Interface().(string)
 				fmt.Printf("这是一个篡改的方法")
 				client := http.Client{}
-				resp, err := client.Get("http://127.0.0.1:8080/" + name)
+				serviceName := val.(Service).ServiceName()
+
+				endpoint := CfgMap[serviceName].Endpoint
+
+				resp, err := client.Get(endpoint + name)
 				if err != nil {
 					fmt.Printf("%+v", err)
 					return []reflect.Value{reflect.ValueOf(""), reflect.ValueOf(err)}
@@ -114,5 +119,13 @@ func SetFuncField(val interface{}) {
 	}
 }
 
-// type UserService interface {
-// }
+type Service interface {
+	ServiceName() string
+}
+
+func (h *hello) ServiceName() string {
+	return "hello"
+
+}
+
+var ErrorServiceNotFound = errors.New("service not found") // sentiel error 预定义错误

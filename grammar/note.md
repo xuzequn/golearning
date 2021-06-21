@@ -202,6 +202,110 @@ go mod tidy
 
 
 
+### api 设计
+
+type  Api interface {
+    Action1()
+    Action2()
+}
+
+type defaultapi struct {
+
+}
+
+func (d *defaultapi) Action() string {
+    // 业务逻辑
+    return string
+}
+
+func (d * defaultapi) Action2() string {
+    // 业务逻辑
+    return string
+}
+
+type MyCustiomApi struct {
+    Api
+    // 需要的字段
+}
+
+func (d *MyCustomApi) Action() string {
+    // 自定义逻辑 前置逻辑
+    result := d.Api.Action1()
+
+    // 自定义逻辑 后置逻辑
+
+    return result
+}
+
+### init 
+无参数
+
+无返回值
+
+包被引入的时候执行，只执行一次
+
+执行顺序不定
+
+可以有多个，一个包内每个文件各一个，官方说明随机执行，实际安文件名字母序执行
+
+通过指定一个init 方法， 把几个init方法按顺序写在指定init
+
+不推荐init 有顺序
+
+### 控制字段
+
+"``"
+//可以选择的控制字段有三种：
+
+// -：不要解析这个字段
+
+// omitempty：当字段为空（默认值）时，不要解析这个字段。比如 false、0、nil、长度为 0 的 array，map，slice，string
+
+// FieldName：当解析 json 的时候，使用这个名字
+
+
+
+### 文件操作
+
+s.OpenFile("./demo.txt", os.O_CREATE|os.O_APPEND, 6) // 读写方式打开
+```
+	/*
+	  os.O_CREATE|os.O_APPEND
+	  或者 os.O_CREATE|os.O_TRUNC|os.O_WRONLY
+	  os.O_RDONLY // 只读
+	  os.O_WRONLY // 只写
+	  os.O_RDWR // 读写
+	  os.O_APPEND // 追加（Append）
+	  os.O_CREATE // 如果文件不存在则先创建
+	  os.O_TRUNC // 文件打开时裁剪文件
+	  os.O_EXCL // 和O_CREATE一起使用，文件不能存在
+	  os.O_SYNC // 以同步I/O的方式打开
+	第三个参数：权限(rwx:0-7)
+	  0：没有任何权限
+	  1：执行权限
+	  2：写权限
+	  3：写权限和执行权限
+	  4：读权限
+	  5：读权限和执行权限
+	  6：读权限和写权限
+	  7：读权限，写权限，执行权限
+	*/
+``` 
+
+### 并发变成 sync
+
+sync 包提供了基本的并发工具 
+
+• sync.Map：并发安全 map 
+
+• sync.Mutex：锁 
+
+• sync.RWMutex：读写锁 
+
+• sync.Once：只执行一次
+
+
+
 ###  invoker
  将和HTTP无关的部分抽出来作为一个INvoker的抽象
  
