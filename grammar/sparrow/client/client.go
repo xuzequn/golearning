@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -18,20 +20,29 @@ import (
 // }
 
 func main() {
-	h := &hello{
-		endpoint: "http://127.0.0.1:8080/",
-	}
-	msg, err := h.SayHello("golang")
+	// h := &hello{
+	// 	endpoint: "http://127.0.0.1:8080/",
+	// }
+	// msg, err := h.SayHello("golang")
 
+	// if err != nil {
+	// 	fmt.Printf("%+v", err)
+	// }
+
+	// fmt.Println(msg)
+
+	// // PrintFuncName(h)
+	// SetFuncField(h)
+	// h.FuncField("golang")
+
+	fcg, err := NewYamlConfigProvider("your path")
 	if err != nil {
-		fmt.Printf("%+v", err)
+		panic("初始化配置失败")
 	}
-
-	fmt.Println(msg)
-
-	// PrintFuncName(h)
-	SetFuncField(h)
-	h.FuncField("golang")
+	err = InitApplication(WithCfgProvider(fcg))
+	if err != nil {
+		panic("初始化应用失败")
+	}
 
 }
 
@@ -81,7 +92,45 @@ func PrintFuncName(val interface{}) {
 }
 
 // 通过反射篡改原方法
-func SetFuncField(val interface{}) {
+// func SetFuncField(val interface{}) {
+// 	// 反射 reflection.Valueof
+// 	v := reflect.ValueOf(val) //这是指针的反射
+// 	ele := v.Elem()           // 拿到了指针指向的结构体
+// 	t := ele.Type()           // 拿到了指针指向的结构体的类型信息
+
+// 	num := t.NumField()
+// 	for i := 0; i < num; i++ {
+// 		f := ele.Field(i)
+// 		if f.CanSet() {
+// 			fn := func(args []reflect.Value) (results []reflect.Value) {
+// 				name := args[0].Interface().(string)
+// 				fmt.Printf("这是一个篡改的方法")
+// 				client := http.Client{}
+// 				serviceName := val.(Service).ServiceName()
+
+// 				endpoint := CfgMap[serviceName].Endpoint
+
+// 				resp, err := client.Get(endpoint + name)
+// 				if err != nil {
+// 					fmt.Printf("%+v", err)
+// 					return []reflect.Value{reflect.ValueOf(""), reflect.ValueOf(err)}
+// 				}
+// 				data, err := ioutil.ReadAll(resp.Body)
+// 				if err != nil {
+// 					fmt.Printf("%+v", err)
+// 					return []reflect.Value{reflect.ValueOf(""), reflect.ValueOf(err)}
+// 				}
+// 				fmt.Println(string(data))
+// 				return []reflect.Value{reflect.ValueOf(string(data)), reflect.Zero(reflect.TypeOf(new(error)).Elem())}
+
+// 			}
+// 			f.Set(reflect.MakeFunc(f.Type(), fn))
+// 		}
+
+// 	}
+// }
+
+func SetFuncField(val Service) {
 	// 反射 reflection.Valueof
 	v := reflect.ValueOf(val) //这是指针的反射
 	ele := v.Elem()           // 拿到了指针指向的结构体
@@ -89,33 +138,57 @@ func SetFuncField(val interface{}) {
 
 	num := t.NumField()
 	for i := 0; i < num; i++ {
+		field := t.Field(i)
 		f := ele.Field(i)
 		if f.CanSet() {
 			fn := func(args []reflect.Value) (results []reflect.Value) {
-				name := args[0].Interface().(string)
+				in := args[0].Interface()
+				out := reflect.New(field.Type.Out(0).Elem()).Interface()
+				inData, err := json.Marshal(in)
+
+				if err != nil {
+					return []reflect.Value{reflect.ValueOf(out), reflect.ValueOf(err)}
+				}
 				fmt.Printf("这是一个篡改的方法")
 				client := http.Client{}
-				serviceName := val.(Service).ServiceName()
 
-				endpoint := CfgMap[serviceName].Endpoint
+				name := val.ServiceName()
 
-				resp, err := client.Get(endpoint + name)
+				cfg, err := App.CfgProvider.GetServiceConfig(name)
+
+				if err != nil {
+					return []reflect.Value{reflect.ValueOf(out), reflect.ValueOf(err)}
+				}
+				req, err := http.NewRequest("POST", cfg.Endpoint, bytes.NewReader(inData))
+
+				if err != nil {
+					return []reflect.Value{reflect.ValueOf(out), reflect.ValueOf(err)}
+				}
+
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("sparrow-service", name)
+				req.Header.Set("sparrow-service-method", field.Name)
+
+				resp, err := client.Do(req)
+
 				if err != nil {
 					fmt.Printf("%+v", err)
 					return []reflect.Value{reflect.ValueOf(""), reflect.ValueOf(err)}
 				}
 				data, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("%+v", err)
-					return []reflect.Value{reflect.ValueOf(""), reflect.ValueOf(err)}
+					return []reflect.Value{reflect.ValueOf(out), reflect.ValueOf(err)}
+				}
+				err = json.Unmarshal(data, out)
+				if err != nil {
+					return []reflect.Value{reflect.ValueOf(out), reflect.ValueOf(err)}
 				}
 				fmt.Println(string(data))
-				return []reflect.Value{reflect.ValueOf(string(data)), reflect.Zero(reflect.TypeOf(new(error)).Elem())}
+				return []reflect.Value{reflect.ValueOf(out), reflect.Zero(reflect.TypeOf(new(error)).Elem())}
 
 			}
 			f.Set(reflect.MakeFunc(f.Type(), fn))
 		}
-
 	}
 }
 
