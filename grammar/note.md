@@ -263,6 +263,11 @@ func (d *MyCustomApi) Action() string {
 
 // FieldName：当解析 json 的时候，使用这个名字
 
+### defer
+
+先进后出
+
+相当于 finally
 
 
 ### 文件操作

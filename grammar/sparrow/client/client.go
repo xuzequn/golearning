@@ -35,12 +35,20 @@ func main() {
 	// SetFuncField(h)
 	// h.FuncField("golang")
 
+	defer func() {
+		if data := recover(); data != nil {
+			str := data.(string)
+			fmt.Println(str)
+		}
+	}()
+
 	fcg, err := NewYamlConfigProvider("your path")
 	if err != nil {
 		panic("初始化配置失败")
 	}
 	err = InitApplication(WithCfgProvider(fcg))
 	if err != nil {
+		// 不可挽回的错误，直接崩掉
 		panic("初始化应用失败")
 	}
 

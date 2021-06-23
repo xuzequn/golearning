@@ -19,7 +19,7 @@ func NewYamlConfigProvider(filepath string) (*YamlConfigProvider, error) {
 	}
 
 	ycp := &YamlConfigProvider{}
-	// contnet 数据注入到我们的结构体实例
+	// contnet 数据注入到我们的结构体实例, content 是一个字节切片，
 	err = yaml.Unmarshal(content, ycp)
 	return ycp, err
 }

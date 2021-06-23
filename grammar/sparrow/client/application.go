@@ -11,8 +11,14 @@ type application struct {
 var App *application
 var appOnce sync.Once
 
-//  返回方法的定义，
+//  返回方法的定义，定义了一个类型， 是一个方法的类型
 type AppOption func(app *application) error
+
+var _ AppOption = App1
+
+func App1(app *application) error {
+	return nil
+}
 
 // 初始化应用，接收配置，初始化应用
 func InitApplication(opts ...AppOption) error {
