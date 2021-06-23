@@ -22,3 +22,5 @@ func TestSetFuncFied(t *testing.T) {
 	// assert.Nil(t, hello{endpoint: "http://127.0.0.1:8080/"}, "bbbbccc")
 
 }
+
+func Test
