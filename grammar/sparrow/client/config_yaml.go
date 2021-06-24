@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -26,6 +27,7 @@ func NewYamlConfigProvider(filepath string) (*YamlConfigProvider, error) {
 
 // 拿出YamlConfigProvider的Service参数下 map的存放的某个serviceName下的配置类型是config
 func (y *YamlConfigProvider) GetServiceConfig(serviceName string) (*Config, error) {
+	fmt.Println("111111", y)
 	cfg, ok := y.Services[serviceName]
 	if !ok {
 		return nil, ErrServiceNotFound

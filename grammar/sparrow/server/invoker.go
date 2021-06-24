@@ -65,3 +65,9 @@ type Filter func(inv *Invocation)
 func logFilter(inv *Invocation) {
 	fmt.Printf("log filter ===== service name: %s, method name: %s \n", inv.ServiceName, inv.MethodName)
 }
+
+// 超时重试
+
+// 反射相关
+
+// http

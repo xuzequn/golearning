@@ -58,28 +58,28 @@ type HelloService interface {
 	SayHello(name string) (string, error)
 }
 
-type hello struct {
-	endpoint  string
-	FuncField func(name string) (string, error) //通过反射可以修改
-	// GetUser(req *UserReq) (*User, error)
-}
+// type hello struct {
+// 	endpoint  string
+// 	FuncField func(name string) (string, error) //通过反射可以修改
+// 	// GetUser(req *UserReq) (*User, error)
+// }
 
 // 通过反射改不了, 这是实现interface的方法
-func (h hello) SayHello(name string) (string, error) {
-	// panic ("inplement me")
-	client := http.Client{}
-	resp, err := client.Get(fmt.Sprintf(h.endpoint + name))
-	if err != nil {
-		fmt.Printf("%+v", err)
-		return "", nil
-	}
-	date, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("%+v", err)
-		return "", err
-	}
-	return string(date), nil
-}
+// func (h hello) SayHello(name string) (string, error) {
+// 	// panic ("inplement me")
+// 	client := http.Client{}
+// 	resp, err := client.Get(fmt.Sprintf(h.endpoint + name))
+// 	if err != nil {
+// 		fmt.Printf("%+v", err)
+// 		return "", nil
+// 	}
+// 	date, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		fmt.Printf("%+v", err)
+// 		return "", err
+// 	}
+// 	return string(date), nil
+// }
 
 // 通过反射获取原方法信息
 func PrintFuncName(val interface{}) {
@@ -204,9 +204,9 @@ type Service interface {
 	ServiceName() string
 }
 
-func (h *hello) ServiceName() string {
-	return "hello"
+// func (h *hello) ServiceName() string {
+// 	return "hello"
 
-}
+// }
 
 var ErrorServiceNotFound = errors.New("service not found") // sentiel error 预定义错误

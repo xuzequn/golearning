@@ -45,6 +45,7 @@ type userService struct {
 type helloService struct {
 }
 
+// 业务代码
 func (h *helloService) SayHello(input *Input) (*Output, error) {
 	fmt.Printf("Say Hello From " + input.Name)
 	return &Output{

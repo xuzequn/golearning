@@ -5,6 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -34,12 +38,13 @@ func hander(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// 注册服务
 	AddService(&userService{})
 	AddService(&helloService{})
 
-	// go func() {
-	// 	listenSignal()
-	// }()
+	go func() {
+		listenSignal()
+	}()
 
 	http.HandleFunc("/", hander)
 	// if err := http.ListenAndServe("0.0.0.0:8080", nil); err != nil {
@@ -48,15 +53,36 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// func listenSignal(){
-// 	signals := make(chan os.Signal, 1)
+var sysSignals = []os.Signal{os.Interrupt, os.Kill, syscall.SIGKILL,
+	syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGILL, syscall.SIGTRAP,
+	syscall.SIGABRT, syscall.SIGTERM}
 
-// 	signal.Notify(signal, sysSignals..)
+func listenSignal() {
+	signals := make(chan os.Signal, 1)
 
-// 	select{
-// 	case <- signals:
-// 		forceShutdownIfneed()
-// 		shutdown()
-// 		os.Exit(0)
-// 	}
-// }
+	signal.Notify(signals, sysSignals...)
+
+	select {
+	case <-signals:
+		forceShutdownIfneed()
+		shutdown()
+		os.Exit(0)
+	}
+}
+
+func forceShutdownIfneed() {
+	time.AfterFunc(time.Minute, func() {
+		os.Exit(1)
+	})
+}
+
+func shutdown() {
+	// 执行各种动作
+	services.Range(func(key, value interface{}) bool {
+		service := value.(Service)
+		go func() {
+			service.ShutDown()
+		}()
+		return true
+	})
+}
