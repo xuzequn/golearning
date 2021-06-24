@@ -1,4 +1,3 @@
-
 # Go初级工程师
 
 ## Golang基础语法 和 RPC 基础
@@ -270,6 +269,10 @@ func (d *MyCustomApi) Action() string {
 相当于 finally
 
 
+### 组合
+
+
+
 ### 文件操作
 
 s.OpenFile("./demo.txt", os.O_CREATE|os.O_APPEND, 6) // 读写方式打开
@@ -301,14 +304,36 @@ s.OpenFile("./demo.txt", os.O_CREATE|os.O_APPEND, 6) // 读写方式打开
 
 sync 包提供了基本的并发工具 
 
-• sync.Map：并发安全 map 
+• sync.Map：并发安全 map  源码解读，面试题常考
+
+sync.Map 创建一个线程安全的Map
+
+sync.Map.Store() 存储
 
 • sync.Mutex：锁 
 
+记得解锁
+
+lock := sync.Mutex
+
+lock.lock()
+
+defer lock.Unlock()
+
 • sync.RWMutex：读写锁 
 
+lock := sync.RWMutex
+
+lock.Rlock()
+
+defer lock.RUnlock()
+
+go lock 不可重入，同一个线程，不可多次加锁
+
+go lock 不可升级，读锁不可升级成写锁，
 • sync.Once：只执行一次
 
+// 可以实现单例模式
 
 
 ###  invoker
@@ -326,5 +351,6 @@ addservice
 addservice
 
  // 启动服务
+ 
  // 判断服务启动成功
  // 注册

@@ -23,4 +23,4 @@ func TestSetFuncFied(t *testing.T) {
 
 }
 
-func Test
+// func Test
